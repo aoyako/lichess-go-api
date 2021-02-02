@@ -3,7 +3,6 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -122,23 +121,40 @@ type Preferences struct {
 }
 
 // GetMyProfile returns information about logged user
-func (l *LichessAPI) GetMyProfile() *User {
-	resp := l.request(http.MethodGet, l.endpoint.accountProfile, "")
+func (l *LichessAPI) GetMyProfile() (*User, error) {
+	params := &reqParams{
+		requestType: http.MethodGet,
+		endpoint:    l.endpoint.accountProfile,
+	}
+
+	resp, err := l.request(params)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 
 	var user User
-	err := json.NewDecoder(resp.Body).Decode(&user)
-
+	err = json.NewDecoder(resp.Body).Decode(&user)
 	if err != nil {
-		log.Printf("Cannot decode responce body %s\n", err)
+		return nil, err
 	}
 
-	return &user
+	return &user, nil
 }
 
 // GetMyEmail returns user's email
-func (l *LichessAPI) GetMyEmail() string {
-	resp := l.request(http.MethodGet, l.endpoint.accountEmail, "")
+func (l *LichessAPI) GetMyEmail() (string, error) {
+	params := &reqParams{
+		requestType: http.MethodGet,
+		endpoint:    l.endpoint.accountEmail,
+	}
+
+	resp, err := l.request(params)
+	if err != nil {
+		return "", err
+	}
+
 	defer resp.Body.Close()
 
 	type email struct {
@@ -147,14 +163,26 @@ func (l *LichessAPI) GetMyEmail() string {
 
 	var e email
 
-	json.NewDecoder(resp.Body).Decode(&e)
+	err = json.NewDecoder(resp.Body).Decode(&e)
+	if err != nil {
+		return "", err
+	}
 
-	return e.Email
+	return e.Email, nil
 }
 
 // GetMyPreferences returns user's preferences
-func (l *LichessAPI) GetMyPreferences() *Preferences {
-	resp := l.request(http.MethodGet, l.endpoint.accountPreferences, "")
+func (l *LichessAPI) GetMyPreferences() (*Preferences, error) {
+	params := &reqParams{
+		requestType: http.MethodGet,
+		endpoint:    l.endpoint.accountPreferences,
+	}
+
+	resp, err := l.request(params)
+	if err != nil {
+		return nil, err
+	}
+
 	defer resp.Body.Close()
 
 	type prefsResp struct {
@@ -163,14 +191,26 @@ func (l *LichessAPI) GetMyPreferences() *Preferences {
 
 	var prefs prefsResp
 
-	json.NewDecoder(resp.Body).Decode(&prefs)
+	err = json.NewDecoder(resp.Body).Decode(&prefs)
+	if err != nil {
+		return nil, err
+	}
 
-	return &prefs.Prefs
+	return &prefs.Prefs, nil
 }
 
 // GetMyKidModeStatus returns user's kid mode status
-func (l *LichessAPI) GetMyKidModeStatus() bool {
-	resp := l.request(http.MethodGet, l.endpoint.accountKidModeStatus, "")
+func (l *LichessAPI) GetMyKidModeStatus() (bool, error) {
+	params := &reqParams{
+		requestType: http.MethodGet,
+		endpoint:    l.endpoint.accountKidModeStatus,
+	}
+
+	resp, err := l.request(params)
+	if err != nil {
+		return false, err
+	}
+
 	defer resp.Body.Close()
 
 	type kidStatus struct {
@@ -179,17 +219,28 @@ func (l *LichessAPI) GetMyKidModeStatus() bool {
 
 	var kid kidStatus
 
-	json.NewDecoder(resp.Body).Decode(&kid)
+	err = json.NewDecoder(resp.Body).Decode(&kid)
+	if err != nil {
+		return false, err
+	}
 
-	return kid.Kid
+	return kid.Kid, nil
 }
 
 // SetMyKidModeStatus sets user's kid mode status.
 // Returns true on success
-func (l *LichessAPI) SetMyKidModeStatus(newStatus bool) bool {
-	query := fmt.Sprintf("v=%v", newStatus)
+func (l *LichessAPI) SetMyKidModeStatus(newStatus bool) (bool, error) {
+	params := &reqParams{
+		requestType: http.MethodPost,
+		endpoint:    l.endpoint.accountKidModeStatus,
+		data:        []byte(fmt.Sprintf("v=%v", newStatus)),
+	}
 
-	resp := l.request(http.MethodPost, l.endpoint.accountKidModeStatus, query)
+	resp, err := l.request(params)
+	if err != nil {
+		return false, err
+	}
+
 	defer resp.Body.Close()
 
 	type result struct {
@@ -197,7 +248,10 @@ func (l *LichessAPI) SetMyKidModeStatus(newStatus bool) bool {
 	}
 
 	var res result
-	json.NewDecoder(resp.Body).Decode(&res)
+	err = json.NewDecoder(resp.Body).Decode(&res)
+	if err != nil {
+		return false, err
+	}
 
-	return res.Ok
+	return res.Ok, nil
 }

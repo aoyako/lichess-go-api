@@ -19,9 +19,10 @@ func Test_GetMyProfile(t *testing.T) {
 		response    string
 	}
 	tests := []struct {
-		name   string
-		params params
-		want   User
+		name    string
+		params  params
+		want    User
+		wantErr error
 	}{
 		{
 			name: "Get user data",
@@ -168,6 +169,7 @@ func Test_GetMyProfile(t *testing.T) {
 				Blocking:   false,
 				FollowsYou: false,
 			},
+			wantErr: nil,
 		},
 	}
 
@@ -188,9 +190,10 @@ func Test_GetMyProfile(t *testing.T) {
 			})
 			lapi.endpoint.accountProfile = server.URL
 
-			user := lapi.GetMyProfile()
+			user, err := lapi.GetMyProfile()
 
 			assert.Equal(tt.want, *user)
+			assert.Equal(tt.wantErr, err)
 		})
 	}
 }
@@ -205,9 +208,10 @@ func Test_GetMyEmail(t *testing.T) {
 		response    string
 	}
 	tests := []struct {
-		name   string
-		params params
-		want   string
+		name    string
+		params  params
+		want    string
+		wantErr error
 	}{
 		{
 			name: "Get user email",
@@ -218,7 +222,8 @@ func Test_GetMyEmail(t *testing.T) {
 					"email": "example@nomail.org"
 				}`,
 			},
-			want: "example@nomail.org",
+			want:    "example@nomail.org",
+			wantErr: nil,
 		},
 	}
 
@@ -239,9 +244,10 @@ func Test_GetMyEmail(t *testing.T) {
 			})
 			lapi.endpoint.accountEmail = server.URL
 
-			mail := lapi.GetMyEmail()
+			mail, err := lapi.GetMyEmail()
 
 			assert.Equal(tt.want, mail)
+			assert.Equal(tt.wantErr, err)
 		})
 	}
 }
@@ -256,9 +262,10 @@ func Test_GetMyKidStatus(t *testing.T) {
 		response    string
 	}
 	tests := []struct {
-		name   string
-		params params
-		want   bool
+		name    string
+		params  params
+		want    bool
+		wantErr error
 	}{
 		{
 			name: "Get user kid status",
@@ -269,7 +276,8 @@ func Test_GetMyKidStatus(t *testing.T) {
 					"kid": true
 				}`,
 			},
-			want: true,
+			want:    true,
+			wantErr: nil,
 		},
 	}
 
@@ -290,9 +298,10 @@ func Test_GetMyKidStatus(t *testing.T) {
 			})
 			lapi.endpoint.accountKidModeStatus = server.URL
 
-			kid := lapi.GetMyKidModeStatus()
+			kid, err := lapi.GetMyKidModeStatus()
 
 			assert.Equal(tt.want, kid)
+			assert.Equal(tt.wantErr, err)
 		})
 	}
 }
@@ -307,10 +316,11 @@ func Test_SetMyKidStatus(t *testing.T) {
 		response    string
 	}
 	tests := []struct {
-		name   string
-		args   bool
-		params params
-		want   bool
+		name    string
+		args    bool
+		params  params
+		want    bool
+		wantErr error
 	}{
 		{
 			name: "Set user kid status",
@@ -322,7 +332,8 @@ func Test_SetMyKidStatus(t *testing.T) {
 					"ok": true
 				}`,
 			},
-			want: true,
+			want:    true,
+			wantErr: nil,
 		},
 	}
 
@@ -343,9 +354,10 @@ func Test_SetMyKidStatus(t *testing.T) {
 			})
 			lapi.endpoint.accountKidModeStatus = server.URL
 
-			kid := lapi.SetMyKidModeStatus(tt.args)
+			kid, err := lapi.SetMyKidModeStatus(tt.args)
 
 			assert.Equal(tt.want, kid)
+			assert.Equal(tt.wantErr, err)
 		})
 	}
 }
