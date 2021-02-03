@@ -9,6 +9,12 @@ type serviceEndpoint struct {
 	topAllPlayers        string
 	topPlayers           string
 	userProfile          string
+	userRatingHistory    string
+	userActivity         string
+	userData             string
+	teamMembers          string
+	userLiveStreaming    string
+	userCrosstable       string
 }
 
 func newServiceEndpoint() *serviceEndpoint {
@@ -18,9 +24,15 @@ func newServiceEndpoint() *serviceEndpoint {
 		accountPreferences:   "https://lichess.org/api/account/preferences",
 		accountKidModeStatus: "https://lichess.org/api/account/kid",
 
-		userStatus:    "https://lichess.org/api/users/status",
-		topAllPlayers: "https://lichess.org/player",
-		topPlayers:    "https://lichess.org/player/top/%d/%s",
-		userProfile:   "https://lichess.org/api/user/%s",
+		userStatus:        "https://lichess.org/api/users/status",
+		topAllPlayers:     "https://lichess.org/player",
+		topPlayers:        "https://lichess.org/player/top/%d/%s",
+		userProfile:       "https://lichess.org/api/user/%s",
+		userRatingHistory: "https://lichess.org/api/user/%s/rating-history",
+		userActivity:      "https://lichess.org/api/user/%s/activity",
+		userData:          "https://lichess.org/api/users",
+		teamMembers:       "https://lichess.org/api/team/%s/users",
+		userLiveStreaming: "https://lichess.org/streamer/live",
+		userCrosstable:    "https://lichess.org/api/crosstable/%s/%s",
 	}
 }
