@@ -378,8 +378,8 @@ func (l *LichessAPI) GetUserRatingHistory(username string) (map[string][]DailyRa
 	for _, helem := range history {
 		ratings := make([]DailyRating, len(helem.Points))
 
-		for _, point := range helem.Points {
-			ratings = append(ratings, DailyRating{point[0], point[1], point[2], point[3]})
+		for ind, point := range helem.Points {
+			ratings[ind] = DailyRating{point[0], point[1], point[2], point[3]}
 		}
 
 		result[helem.Name] = ratings
