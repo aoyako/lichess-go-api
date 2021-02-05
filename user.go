@@ -1,9 +1,6 @@
 package main
 
 import (
-	"bufio"
-	"bytes"
-	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -456,9 +453,6 @@ func (l *LichessAPI) GetUsesByID(ids ...string) ([]User, error) {
 // Use channel to get streamed values.
 // Call returned function to stop receiving
 func (l *LichessAPI) GetTeamMembers(id string) (chan User, func(), error) {
-	users := make(chan User, 10)
-	finishContext, cancel := context.WithCancel(context.Background())
-
 	params := &reqParams{
 		requestType: http.MethodGet,
 		endpoint:    fmt.Sprintf(l.endpoint.teamMembers, id),
@@ -466,39 +460,12 @@ func (l *LichessAPI) GetTeamMembers(id string) (chan User, func(), error) {
 
 	resp, err := l.request(params)
 	if err != nil {
-		return nil, cancel, err
+		return nil, nil, err
 	}
 
-	reader := bufio.NewReader(resp.Body)
+	uchan, cancel, err := l.streamJSON(resp, &User{})
 
-	go func() {
-		defer resp.Body.Close()
-
-		for {
-			select {
-			case <-finishContext.Done():
-				return
-			default:
-				message, err := reader.ReadBytes('\n')
-				if err != nil {
-					close(users)
-					return
-				}
-				if len(message) != 0 {
-					var user User
-					err = json.NewDecoder(bytes.NewReader(message)).Decode(&user)
-					if err != nil {
-						close(users)
-						return
-					}
-
-					users <- user
-				}
-			}
-		}
-	}()
-
-	return users, cancel, nil
+	return userChannelWrapper(uchan), cancel, err
 }
 
 // GetLiveStreamers returs current live streaming users

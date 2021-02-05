@@ -15,6 +15,8 @@ type serviceEndpoint struct {
 	teamMembers          string
 	userLiveStreaming    string
 	userCrosstable       string
+	relationFollowing    string
+	relationFollowers    string
 }
 
 func newServiceEndpoint() *serviceEndpoint {
@@ -34,5 +36,8 @@ func newServiceEndpoint() *serviceEndpoint {
 		teamMembers:       "https://lichess.org/api/team/%s/users",
 		userLiveStreaming: "https://lichess.org/streamer/live",
 		userCrosstable:    "https://lichess.org/api/crosstable/%s/%s",
+
+		relationFollowing: "https://lichess.org/api/user/%s/following",
+		relationFollowers: "https://lichess.org/api/user/%s/followers",
 	}
 }
