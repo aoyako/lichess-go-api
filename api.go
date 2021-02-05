@@ -1,9 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"context"
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"reflect"
 )
 
 // Config stores account configuration
@@ -64,6 +68,60 @@ func (l *LichessAPI) request(par *reqParams) (*http.Response, error) {
 	}
 
 	return resp, nil
+}
+
+// Receive streaming response
+// chan interface{} with data
+// func() as cancellation
+func (l *LichessAPI) streamJSON(resp *http.Response, value interface{}) (chan interface{}, func(), error) {
+	reader := bufio.NewReader(resp.Body)
+
+	finishContext, cancel := context.WithCancel(context.Background())
+
+	receiver := make(chan interface{}, 10)
+
+	go func() {
+		defer resp.Body.Close()
+
+		for {
+			select {
+			case <-finishContext.Done():
+				return
+			default:
+				message, err := reader.ReadBytes('\n')
+				if err != nil {
+					close(receiver)
+					return
+				}
+				if len(message) != 0 {
+					err = json.NewDecoder(bytes.NewReader(message)).Decode(value)
+
+					if err != nil {
+						close(receiver)
+						return
+					}
+
+					receiver <- reflect.ValueOf(value).Elem().Interface()
+				}
+			}
+		}
+	}()
+
+	return receiver, cancel, nil
+}
+
+// Converts channel to chan User
+func userChannelWrapper(in chan interface{}) chan User {
+	middleware := make(chan User, 10)
+
+	go func() {
+		for v := range in {
+			middleware <- v.(User)
+		}
+		close(middleware)
+	}()
+
+	return middleware
 }
 
 type reqParams struct {
